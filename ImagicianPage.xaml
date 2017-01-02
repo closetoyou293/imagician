@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ContentPage Title="Folders" xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Imagician" x:Class="Imagician.ImagicianPage">
+	<ContentPage.Resources>
+		<ResourceDictionary>
+			<DataTemplate x:Key="imageItemTemplate">
+				<ImageCell IsEnabled="false" Text="{Binding Title}" ImageSource="{Binding ImagePath}" Detail="{Binding Path}" />
+			</DataTemplate>
+			<DataTemplate x:Key="folderItemTemplate">
+				<ImageCell Height="100" Text="{Binding Title}" ImageSource="folder.png" Detail="{Binding Path}" />
+			</DataTemplate>
+			<DataTemplate x:Key="normalItemTemplate">
+				<TextCell IsEnabled="false" Text="{Binding Title}" Detail="{Binding Path}" />
+			</DataTemplate>
+			<local:PersonDataTemplateSelector x:Key="folderItemsDataTemplateSelector" ImageItemTemplate="{StaticResource imageItemTemplate}" NormalItemTemplate="{StaticResource normalItemTemplate}" FolderItemTemplate="{StaticResource folderItemTemplate}" />
+		</ResourceDictionary>
+	</ContentPage.Resources>
+	<ListView CachingStrategy="RecycleElement" ItemTemplate="{StaticResource folderItemsDataTemplateSelector}" ItemsSource="{Binding Items}" SelectedItem="{Binding Path=SelectedPath, Mode=TwoWay}" ItemSelected="Handle_ItemSelected">
+		<ListView.Header>
+			<Grid>
+				<Grid.RowDefinitions>
+					<RowDefinition>
+					</RowDefinition>
+					<RowDefinition>
+					</RowDefinition>
+					<RowDefinition>
+					</RowDefinition>
+				</Grid.RowDefinitions>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition>
+					</ColumnDefinition>
+					<ColumnDefinition>
+					</ColumnDefinition>
+					<ColumnDefinition>
+					</ColumnDefinition>
+				</Grid.ColumnDefinitions>
+				<Label Text="{Binding SelectedPath.Path}" Grid.ColumnSpan="3">
+				</Label>
+				<Button Text="Back" Grid.Row="1" Command="{Binding GoBackCommand}">
+				</Button>
+				<Button Text="Next" Grid.Row="1" Grid.Column="1" Command="{Binding GoNextCommand}">
+				</Button>
+				<Button Text="Search" Grid.Row="1" Grid.Column="2" Command="{Binding GetImagesCommand}">
+				</Button>
+				<Label Text="Isrecursive" Grid.Row="2" Grid.Column="1" HorizontalOptions="End">
+				</Label>
+				<Switch IsToggled="{Binding IsRecursive, Mode=TwoWay}" Grid.Row="2" Grid.Column="2" />
+			</Grid>
+		</ListView.Header>
+	</ListView>
+</ContentPage>

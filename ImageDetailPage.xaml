@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Imagician.ImageDetailPage" xmlns:local="clr-namespace:Imagician" BackgroundColor="Transparent">
+	<ContentPage.Content>
+		<Grid BackgroundColor="Transparent">
+			<Image Source="{Binding SelectedFile.ImagePath}" />
+			<local:ExifInfoView x:Name="info" HorizontalOptions="End" WidthRequest="200" BackgroundColor="Red" />
+			<ListView ItemsSource="{Binding Messages}" HeightRequest="100" VerticalOptions="End" />
+		</Grid>
+	</ContentPage.Content>
+</ContentPage>

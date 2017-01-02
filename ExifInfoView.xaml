@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentView xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Imagician.ExifInfoView">
+	<ContentView.Content>
+		<Grid Padding="20">
+			<Grid.RowDefinitions>
+			</Grid.RowDefinitions>
+			<Grid.RowDefinitions>
+			</Grid.RowDefinitions>
+			<Grid.RowDefinitions>
+			</Grid.RowDefinitions>
+			<Grid.RowDefinitions>
+			</Grid.RowDefinitions>
+			<Label Text="{Binding SelectedImageInfo.FileName}">
+			</Label>
+			<Label Text="{Binding SelectedImageInfo.DateTime}" Grid.Row="1">
+			</Label>
+			<Label Text="{Binding SelectedImageInfo.Width}" Grid.Row="2">
+			</Label>
+			<Label Text="{Binding SelectedImageInfo.Height}" Grid.Row="3">
+			</Label>
+		</Grid>
+	</ContentView.Content>
+</ContentView>
