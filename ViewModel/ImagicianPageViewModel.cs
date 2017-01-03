@@ -15,34 +15,18 @@ namespace Imagician
 	{
 		string _previousSelectedPath;
 		IFileService _fileService;
+		IImageService _imageService;
+		IFolderService _folderService;
+		ILogService _logService;
 		Stack<FolderItem> _nav = new Stack<FolderItem>();
 
-		string _backupPath = Path.Combine("/", "Volumes", "BACKUP", "Fotos");
-
-		string _noExifBaseFolder = "nodate";
-
-		string _pathToReplate = "/Volumes/data/Photos/";
-
-		string _exifDateFormat = "yyyy:MM:dd HH:mm:ss";
-
-		string[] _imageExtensions = { "jpg", "png", "jpeg", "bmp" };
-
-		string[] _excludeExtensions = { "db" };
-
-		bool _createFolderWithYear = true;
-		bool _createFolderWithMonth = true;
-		bool _createFolderWithDay = false;
-
-		bool _shouldReplacePath = true;
-
-		bool _shouldGetPreviousPartsTillDigit = true;
-		bool _adjustFirstDayOftheMonthPicturesToPreviousMonth = true;
-
-		int _firstDayOfTheMonthTimeSpan = 5;
 
 		public ImagicianPageViewModel()
 		{
+			_logService = DependencyService.Get<ILogService>();
 			_fileService = DependencyService.Get<IFileService>();
+			_imageService = DependencyService.Get<IImageService>();
+			_folderService = DependencyService.Get<IFolderService>();
 			PropertyChanged += (sender, e) =>
 			{
 
@@ -53,7 +37,7 @@ namespace Imagician
 
 		public void Init()
 		{
-			SelectedPath = new FolderItem { Title = "root", Path = Path.Combine("/", "Volumes", "data", "Photos"), IsFolder = true };
+			SelectedPath = new FolderItem { Title = "root", Path = Path.Combine("/", "Volumes"), IsFolder = true };
 		}
 
 		bool _isRecursive = true;
@@ -131,11 +115,21 @@ namespace Imagician
 			}
 		}
 
-		ObservableCollection<string> _messages = new ObservableCollection<string>();
 		public ObservableCollection<string> Messages
 		{
-			get { return _messages; }
-			private set { SetProperty(ref _messages, value); }
+			get { return _logService.Messages; }
+		}
+
+		string _backupPath;
+		public string BackupPath
+		{
+			get { return _backupPath; }
+			set
+			{
+				if (_backupPath == value)
+					return;
+				SetProperty(ref _backupPath, value);
+			}
 		}
 
 
@@ -162,167 +156,21 @@ namespace Imagician
 				{
 					IsBusy = true;
 					var path = SelectedPath.Path;
-					await ParseFolderForImagesAsync(path, IsRecursive);
-					Messages.Insert(0, $"Ended Parsing Folder {path}");
+					_logService.AddMessage(nameof(ImagicianPageViewModel), $"Start Parsing Folder {path}");
+					await _imageService.ParseFolderForImagesAsync(path, IsRecursive, BackupPath);
+					_logService.AddMessage(nameof(ImagicianPageViewModel), $"Ended Parsing Folder {path}");
 					IsBusy = false;
 				}, (arg) => SelectedPath != null && !IsBusy));
 			}
 		}
 
-		Task ParseFolderForImagesAsync(string folderPath, bool isRecursive)
-		{
-			return Task.Run(async () =>
-			   {
-				   Messages.Insert(0, $"Parsing Folder {folderPath} using recursive:{isRecursive}");
-				   var items = GetFilesForPath(folderPath);
-
-				   foreach (var item in items)
-				   {
-					   if (item.IsImage)
-						   CopyImage(item.ImagePath);
-					   else if (!item.IsImage && !item.IsFolder)
-					   {
-						   var filePath = item.Path;
-						   var newFilePath = Path.Combine(_backupPath, _noExifBaseFolder, filePath.Replace(_pathToReplate, ""));
-						   CopyFile(filePath, newFilePath, false);
-					   }
-
-					   if (item.IsFolder && isRecursive)
-						   await ParseFolderForImagesAsync(item.Path, isRecursive);
-
-				   }
-			   });
-
-		}
-
 		void GetFiles()
 		{
 			Items.Clear();
-			foreach (var item in GetFilesForPath(SelectedPath.Path))
+			foreach (var item in _folderService.GetFilesForPath(SelectedPath.Path))
 			{
 				Items.Add(item);
 			}
-		}
-
-		IList<FolderItem> GetFilesForPath(string path)
-		{
-			var result = new List<FolderItem>();
-			var files = _fileService.GetFolders(path, true);
-			foreach (var item in files)
-			{
-				var folder = new FolderItem { Path = item, Title = Path.GetFileNameWithoutExtension(item) };
-				var extension = Path.GetExtension(item);
-				if (string.IsNullOrEmpty(extension))
-				{
-					folder.IsFolder = true;
-				}
-				else
-				{
-					if (_imageExtensions.Any(ext => extension.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
-					{
-						folder.ImagePath = item;
-						folder.IsImage = true;
-					}
-					else if (_excludeExtensions.Any(ext => extension.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
-					{
-						continue;
-					}
-					else
-					{
-						Messages.Insert(0, $"Not known extension {extension}");
-					}
-				}
-				result.Add(folder);
-			}
-			return result;
-		}
-
-		void CopyImage(string filePath)
-		{
-			JpegInfo imageInfo = null;
-			string newFilePath = "";
-			bool usedExif = false;
-			using (var stream = _fileService.GetFileStream(filePath))
-			{
-				imageInfo = ExifReader.ReadJpeg(stream);
-			}
-
-			if (imageInfo != null && (!string.IsNullOrEmpty(imageInfo.DateTime) || !string.IsNullOrEmpty(imageInfo.DateTimeOriginal)))
-			{
-				var realDate = imageInfo.DateTimeOriginal ?? imageInfo.DateTime;
-
-				var dt = DateTime.ParseExact(realDate, _exifDateFormat, CultureInfo.InvariantCulture);
-				if (_adjustFirstDayOftheMonthPicturesToPreviousMonth && dt.Day == 1 && (dt.Hour >= 0 && dt.Hour <= _firstDayOfTheMonthTimeSpan))
-				{
-					dt = dt.AddDays(-1);
-				}
-
-				usedExif = true;
-				newFilePath = Path.Combine(newFilePath, _backupPath);
-				if (_createFolderWithYear)
-					newFilePath = Path.Combine(newFilePath, dt.Year.ToString());
-				if (_createFolderWithMonth)
-					newFilePath = Path.Combine(newFilePath, dt.Month.ToString("d2"));
-				if (_createFolderWithDay)
-					newFilePath = Path.Combine(newFilePath, dt.ToString("d2"));
-
-				if (_shouldGetPreviousPartsTillDigit)
-					newFilePath = GetPreviousPaths(ref newFilePath, filePath);
-				newFilePath = Path.Combine(newFilePath, Path.GetFileName(filePath));
-			}
-			else
-			{
-				newFilePath = Path.Combine(_backupPath, _noExifBaseFolder, _shouldReplacePath ? filePath.Replace(_pathToReplate, "") : filePath);
-			}
-			CopyFile(filePath, newFilePath, usedExif);
-		}
-
-		void CopyFile(string filePath, string newFilePath, bool usedExif)
-		{
-			Messages.Insert(0, $"Copy {filePath} to {newFilePath} Used exif: {usedExif}");
-			try
-			{
-				_fileService.CopyFile(filePath, newFilePath);
-			}
-			catch (IOException ex)
-			{
-				if (ex.Message.Contains("already exists"))
-				{
-
-					var compare = _fileService.CompareImages(filePath, newFilePath);
-					Messages.Insert(0, $"File {newFilePath} already exists and is same {compare}");
-					if (compare)
-						return;
-					else
-					{
-					}
-				}
-				throw ex;
-
-			}
-		}
-
-		static string GetPreviousPaths(ref string newFilePath, string filePath)
-		{
-			var pathPrevious = Path.GetFileName(Path.GetDirectoryName(filePath));
-			if (!IsDigitsOnly(pathPrevious))
-			{
-				GetPreviousPaths(ref newFilePath, Path.GetDirectoryName(filePath));
-				newFilePath = Path.Combine(newFilePath, pathPrevious);
-			}
-
-			return newFilePath;
-		}
-
-		static bool IsDigitsOnly(string str)
-		{
-			foreach (char c in str)
-			{
-				if (c < '0' || c > '9')
-					return false;
-			}
-
-			return true;
 		}
 	}
 }

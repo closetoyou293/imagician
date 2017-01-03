@@ -43,6 +43,8 @@
 				</Button>
 				<Label Text="Isrecursive" Grid.Row="2" Grid.Column="1" HorizontalOptions="End">
 				</Label>
+				<Entry Text="{Binding BackupPath}" Grid.Row="2" Grid.Column="0">
+				</Entry>
 				<Switch IsToggled="{Binding IsRecursive, Mode=TwoWay}" Grid.Row="2" Grid.Column="2" />
 			</Grid>
 		</ListView.Header>

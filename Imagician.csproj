@@ -57,6 +57,12 @@
       <DependentUpon>ExifInfoView.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModel\TodoItemDatabase.cs" />
+    <Compile Include="Services\ImageService.cs" />
+    <Compile Include="Services\FolderItemService.cs" />
+    <Compile Include="Services\IFolderService.cs" />
+    <Compile Include="Services\IImageService.cs" />
+    <Compile Include="Services\ILogService.cs" />
+    <Compile Include="Services\LogService.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="SQLitePCLRaw.core">

@@ -7,7 +7,9 @@ namespace Imagician
 		public App()
 		{
 			InitializeComponent();
-
+			DependencyService.Register<ILogService, LogService>();
+			DependencyService.Register<IFolderService, FolderItemService>();
+			DependencyService.Register<IImageService, ImageService>();
 			var root = new MasterDetailPage();
 			root.BindingContext = new ImagicianPageViewModel();
 			root.Master = new ImagicianPage();

@@ -134,7 +134,7 @@ namespace Imagician.MacOS
 			File.Copy(filePath, newFilePath);
 		}
 
-		public bool CompareImages(string filePath, string newFilePath)
+		public bool CompareFiles(string filePath, string newFilePath)
 		{
 			var fileInfo = new FileInfo(filePath);
 			var newFileInfo = new FileInfo(newFilePath);
