@@ -12,14 +12,15 @@ namespace Imagician
 		IFileService _fileService;
 		IFolderService _folderService;
 		ILogService _logService;
-
-		string _backupPath = Path.Combine("/");
-
-		string _noExifBaseFolder = "nodate";
-
-		string _pathToReplace = "/Volumes/data/Photos/";
+		ISettingsService _settingsService;
 
 		string _exifDateFormat = "yyyy:MM:dd HH:mm:ss";
+
+		string _backupPath => _settingsService.GetSetting<string>(SettingsService.BackupPath);
+
+		string _noExifBaseFolder => _settingsService.GetSetting<string>(SettingsService.NoExifBaseFolder);
+
+		string _pathToReplace => _settingsService.GetSetting<string>(SettingsService.PathToReplace);
 
 		bool _createFolderWithYear = true;
 		bool _createFolderWithMonth = true;
@@ -30,19 +31,18 @@ namespace Imagician
 		bool _shouldGetPreviousPartsTillDigit = true;
 		bool _adjustFirstDayOftheMonthPicturesToPreviousMonth = true;
 
-		int _firstDayOfTheMonthTimeSpan = 5;
+		int _firstDayOfTheMonthTimeSpan = 7;
 
 		public ImageService()
 		{
 			_logService = DependencyService.Get<ILogService>();
 			_fileService = DependencyService.Get<IFileService>();
 			_folderService = DependencyService.Get<IFolderService>();
+			_settingsService = DependencyService.Get<ISettingsService>();
 		}
 
-		public Task ParseFolderForImagesAsync(string folderPath, bool isRecursive, string backupPath = null)
+		public Task ParseFolderForImagesAsync(string folderPath, bool isRecursive)
 		{
-			if (backupPath != null)
-				_backupPath = backupPath;
 			return Task.Run(async () =>
 			   {
 				   var items = _folderService.GetFilesForPath(folderPath);
@@ -59,7 +59,7 @@ namespace Imagician
 					   }
 
 					   if (item.IsFolder && isRecursive)
-						   await ParseFolderForImagesAsync(item.Path, isRecursive, backupPath);
+						   await ParseFolderForImagesAsync(item.Path, isRecursive);
 
 				   }
 			   });

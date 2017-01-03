@@ -18,6 +18,7 @@ namespace Imagician
 		IImageService _imageService;
 		IFolderService _folderService;
 		ILogService _logService;
+		ISettingsService _settingsService;
 		Stack<FolderItem> _nav = new Stack<FolderItem>();
 
 
@@ -27,6 +28,7 @@ namespace Imagician
 			_fileService = DependencyService.Get<IFileService>();
 			_imageService = DependencyService.Get<IImageService>();
 			_folderService = DependencyService.Get<IFolderService>();
+			_settingsService = DependencyService.Get<ISettingsService>();
 			PropertyChanged += (sender, e) =>
 			{
 
@@ -123,12 +125,13 @@ namespace Imagician
 		string _backupPath;
 		public string BackupPath
 		{
-			get { return _backupPath; }
+			get { return _settingsService.GetSetting<string>(SettingsService.BackupPath); }
 			set
 			{
 				if (_backupPath == value)
 					return;
 				SetProperty(ref _backupPath, value);
+				_settingsService.SetSetting<string>(SettingsService.BackupPath, _backupPath);
 			}
 		}
 
@@ -157,7 +160,7 @@ namespace Imagician
 					IsBusy = true;
 					var path = SelectedPath.Path;
 					_logService.AddMessage(nameof(ImagicianPageViewModel), $"Start Parsing Folder {path}");
-					await _imageService.ParseFolderForImagesAsync(path, IsRecursive, BackupPath);
+					await _imageService.ParseFolderForImagesAsync(path, IsRecursive);
 					_logService.AddMessage(nameof(ImagicianPageViewModel), $"Ended Parsing Folder {path}");
 					IsBusy = false;
 				}, (arg) => SelectedPath != null && !IsBusy));

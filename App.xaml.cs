@@ -8,6 +8,7 @@ namespace Imagician
 		{
 			InitializeComponent();
 			DependencyService.Register<ILogService, LogService>();
+			DependencyService.Register<ISettingsService, SettingsService>();
 			DependencyService.Register<IFolderService, FolderItemService>();
 			DependencyService.Register<IImageService, ImageService>();
 			var root = new MasterDetailPage();
