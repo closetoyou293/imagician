@@ -6,8 +6,7 @@ namespace Imagician
 {
 	public interface IFileService
 	{
-		bool CompareImages(string filePath, string newFilePath);
-
+		bool CompareFiles(string filePath, string newFilePath);
 		void CopyFile(string filePath, string newFilePath);
 		void MoveFile(string filePath, string newFilePath);
 		Stream GetFileStream(string filePath);

@@ -3,81 +3,17 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using ExifLib;
-using SQLite;
 using Xamarin.Forms;
 
 namespace Imagician
 {
 
-	public class TodoItemDatabase
-	{
-		static TodoItemDatabase database;
-
-		static SQLiteAsyncConnection connection;
-
-		public static TodoItemDatabase Database
-		{
-			get
-			{
-				if (database == null)
-				{
-					database = new TodoItemDatabase(DependencyService.Get<IFileService>().GetLocalFilePath("TodoSQLite.db3"));
-				}
-				return database;
-			}
-		}
-
-		public TodoItemDatabase(string dbPath)
-		{
-			try
-			{
-				connection = new SQLiteAsyncConnection(dbPath);
-
-				connection.CreateTableAsync<FolderItem>().Wait();
-			}
-			catch (Exception ex)
-			{
-
-			}
-
-		}
-
-		public Task<List<FolderItem>> GetItemsAsync()
-		{
-			return connection.Table<FolderItem>().ToListAsync();
-		}
-
-		public Task<List<FolderItem>> GetItemsNotDoneAsync()
-		{
-			return connection.QueryAsync<FolderItem>("SELECT * FROM [FolderItem] WHERE [Done] = 0");
-		}
-
-		public Task<FolderItem> GetItemAsync(int id)
-		{
-			return connection.Table<FolderItem>().Where(i => i.ID == id).FirstOrDefaultAsync();
-		}
-
-		public Task<int> SaveItemAsync(FolderItem item)
-		{
-			if (item.ID != 0)
-			{
-				return connection.UpdateAsync(item);
-			}
-			else {
-				return connection.InsertAsync(item);
-			}
-		}
-
-		public Task<int> DeleteItemAsync(FolderItem item)
-		{
-			return connection.DeleteAsync(item);
-		}
-	}
-
 	public class ImagicianPageViewModel : BaseViewModel
 	{
+		string _previousSelectedPath;
 		IFileService _fileService;
 		Stack<FolderItem> _nav = new Stack<FolderItem>();
 
@@ -86,6 +22,23 @@ namespace Imagician
 		string _noExifBaseFolder = "nodate";
 
 		string _pathToReplate = "/Volumes/data/Photos/";
+
+		string _exifDateFormat = "yyyy:MM:dd HH:mm:ss";
+
+		string[] _imageExtensions = { "jpg", "png", "jpeg", "bmp" };
+
+		string[] _excludeExtensions = { "db" };
+
+		bool _createFolderWithYear = true;
+		bool _createFolderWithMonth = true;
+		bool _createFolderWithDay = false;
+
+		bool _shouldReplacePath = true;
+
+		bool _shouldGetPreviousPartsTillDigit = true;
+		bool _adjustFirstDayOftheMonthPicturesToPreviousMonth = true;
+
+		int _firstDayOfTheMonthTimeSpan = 5;
 
 		public ImagicianPageViewModel()
 		{
@@ -98,16 +51,12 @@ namespace Imagician
 			};
 		}
 
-
 		public void Init()
 		{
-			//var database = await TodoItemDatabase.Database.GetItemsAsync();
 			SelectedPath = new FolderItem { Title = "root", Path = Path.Combine("/", "Volumes", "data", "Photos"), IsFolder = true };
-
 		}
 
 		bool _isRecursive = true;
-
 		public bool IsRecursive
 		{
 			get { return _isRecursive; }
@@ -121,10 +70,9 @@ namespace Imagician
 			get { return _items; }
 			private set { SetProperty(ref _items, value); }
 		}
-		string _previousSelectedPath;
+
 
 		FolderItem _selectedPath;
-
 		public FolderItem SelectedPath
 		{
 			get { return _selectedPath; }
@@ -165,7 +113,6 @@ namespace Imagician
 				using (var stream = _fileService.GetFileStream(_selectedFile.ImagePath))
 				{
 					SelectedImageInfo = ExifReader.ReadJpeg(stream);
-
 				}
 			}
 		}
@@ -185,56 +132,14 @@ namespace Imagician
 		}
 
 		ObservableCollection<string> _messages = new ObservableCollection<string>();
-
 		public ObservableCollection<string> Messages
 		{
 			get { return _messages; }
 			private set { SetProperty(ref _messages, value); }
 		}
 
+
 		Command _goBackCommand;
-
-		Command _getImagesCommand;
-
-		void GetFiles()
-		{
-			Items.Clear();
-			foreach (var item in GetFilesForPath(SelectedPath.Path))
-			{
-				Items.Add(item);
-			}
-		}
-
-		IList<FolderItem> GetFilesForPath(string path)
-		{
-			var result = new List<FolderItem>();
-			var files = _fileService.GetFolders(path, true);
-			foreach (var item in files)
-			{
-				var folder = new FolderItem { Path = item, Title = Path.GetFileNameWithoutExtension(item) };
-				var extension = Path.GetExtension(item);
-				if (string.IsNullOrEmpty(extension))
-				{
-					folder.IsFolder = true;
-				}
-				else
-				{
-					if (extension.EndsWith("jpg", StringComparison.OrdinalIgnoreCase) || extension.EndsWith("png", StringComparison.OrdinalIgnoreCase) || extension.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase))
-					{
-						folder.ImagePath = item;
-						folder.IsImage = true;
-					}
-					else
-					{
-						Messages.Insert(0, $"Not known extension {extension}");
-					}
-				}
-				result.Add(folder);
-			}
-			return result;
-		}
-
-
 		public Command GoBackCommand
 		{
 			get
@@ -248,6 +153,7 @@ namespace Imagician
 			}
 		}
 
+		Command _getImagesCommand;
 		public Command GetImagesCommand
 		{
 			get
@@ -289,6 +195,48 @@ namespace Imagician
 
 		}
 
+		void GetFiles()
+		{
+			Items.Clear();
+			foreach (var item in GetFilesForPath(SelectedPath.Path))
+			{
+				Items.Add(item);
+			}
+		}
+
+		IList<FolderItem> GetFilesForPath(string path)
+		{
+			var result = new List<FolderItem>();
+			var files = _fileService.GetFolders(path, true);
+			foreach (var item in files)
+			{
+				var folder = new FolderItem { Path = item, Title = Path.GetFileNameWithoutExtension(item) };
+				var extension = Path.GetExtension(item);
+				if (string.IsNullOrEmpty(extension))
+				{
+					folder.IsFolder = true;
+				}
+				else
+				{
+					if (_imageExtensions.Any(ext => extension.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
+					{
+						folder.ImagePath = item;
+						folder.IsImage = true;
+					}
+					else if (_excludeExtensions.Any(ext => extension.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
+					{
+						continue;
+					}
+					else
+					{
+						Messages.Insert(0, $"Not known extension {extension}");
+					}
+				}
+				result.Add(folder);
+			}
+			return result;
+		}
+
 		void CopyImage(string filePath)
 		{
 			JpegInfo imageInfo = null;
@@ -299,23 +247,59 @@ namespace Imagician
 				imageInfo = ExifReader.ReadJpeg(stream);
 			}
 
-			if (imageInfo != null && !string.IsNullOrEmpty(imageInfo.DateTime))
+			if (imageInfo != null && (!string.IsNullOrEmpty(imageInfo.DateTime) || !string.IsNullOrEmpty(imageInfo.DateTimeOriginal)))
 			{
-				var dt = DateTime.ParseExact(imageInfo.DateTime, "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture);
-				newFilePath = Path.Combine(_backupPath, dt.Year.ToString(), dt.Month.ToString());
+				var realDate = imageInfo.DateTimeOriginal ?? imageInfo.DateTime;
+
+				var dt = DateTime.ParseExact(realDate, _exifDateFormat, CultureInfo.InvariantCulture);
+				if (_adjustFirstDayOftheMonthPicturesToPreviousMonth && dt.Day == 1 && (dt.Hour >= 0 && dt.Hour <= _firstDayOfTheMonthTimeSpan))
+				{
+					dt = dt.AddDays(-1);
+				}
+
 				usedExif = true;
+				newFilePath = Path.Combine(newFilePath, _backupPath);
+				if (_createFolderWithYear)
+					newFilePath = Path.Combine(newFilePath, dt.Year.ToString());
+				if (_createFolderWithMonth)
+					newFilePath = Path.Combine(newFilePath, dt.Month.ToString("d2"));
+				if (_createFolderWithDay)
+					newFilePath = Path.Combine(newFilePath, dt.ToString("d2"));
 
-				newFilePath = GetPreviousPaths(ref newFilePath, filePath);
-
+				if (_shouldGetPreviousPartsTillDigit)
+					newFilePath = GetPreviousPaths(ref newFilePath, filePath);
 				newFilePath = Path.Combine(newFilePath, Path.GetFileName(filePath));
 			}
 			else
 			{
-				newFilePath = Path.Combine(_backupPath, _noExifBaseFolder, filePath.Replace(_pathToReplate, ""));
-
+				newFilePath = Path.Combine(_backupPath, _noExifBaseFolder, _shouldReplacePath ? filePath.Replace(_pathToReplate, "") : filePath);
 			}
 			CopyFile(filePath, newFilePath, usedExif);
+		}
 
+		void CopyFile(string filePath, string newFilePath, bool usedExif)
+		{
+			Messages.Insert(0, $"Copy {filePath} to {newFilePath} Used exif: {usedExif}");
+			try
+			{
+				_fileService.CopyFile(filePath, newFilePath);
+			}
+			catch (IOException ex)
+			{
+				if (ex.Message.Contains("already exists"))
+				{
+
+					var compare = _fileService.CompareImages(filePath, newFilePath);
+					Messages.Insert(0, $"File {newFilePath} already exists and is same {compare}");
+					if (compare)
+						return;
+					else
+					{
+					}
+				}
+				throw ex;
+
+			}
 		}
 
 		static string GetPreviousPaths(ref string newFilePath, string filePath)
@@ -339,28 +323,6 @@ namespace Imagician
 			}
 
 			return true;
-		}
-
-		void CopyFile(string filePath, string newFilePath, bool usedExif)
-		{
-			Messages.Insert(0, $"Try Copy {filePath} to {newFilePath} Used exif: {usedExif}");
-			try
-			{
-				_fileService.CopyFile(filePath, newFilePath);
-			}
-			catch (IOException ex)
-			{
-				if (ex.Message.Contains("already exists"))
-				{
-
-					var compare = _fileService.CompareImages(filePath, newFilePath);
-					Messages.Insert(0, $"File {newFilePath} already exists and is same {compare}");
-					if (compare)
-						return;
-				}
-				throw ex;
-
-			}
 		}
 	}
 }
