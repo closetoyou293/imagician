@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage Title="Detail" xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Imagician.ImageDetailPage" xmlns:local="clr-namespace:Imagician" BackgroundColor="Transparent">
+	<ContentPage.Content>
+		<Grid BackgroundColor="Transparent">
+			<Image Source="{Binding SelectedFile.ImagePath}" />
+			<local:ExifInfoView x:Name="info" HorizontalOptions="End" WidthRequest="200" BackgroundColor="Red" TranslationX="200" />
+			<ListView x:Name="lstLog" ItemsSource="{Binding Messages}" HeightRequest="100" VerticalOptions="End" TranslationY="-100" />
+			<StackLayout VerticalOptions="Start">
+				<Button x:Name="btnExif" Text="Exif" />
+				<Button x:Name="btnLog" Text="Log" />
+			</StackLayout>
+		</Grid>
+	</ContentPage.Content>
+</ContentPage>

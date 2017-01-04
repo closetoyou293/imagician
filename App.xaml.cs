@@ -14,7 +14,7 @@ namespace Imagician
 			var root = new MasterDetailPage();
 			root.BindingContext = new ImagicianPageViewModel();
 			root.Master = new ImagicianPage();
-			root.Detail = new ImageDetailPage();
+			root.Detail = new NavigationPage(new FolderDetailPage());
 
 			MainPage = root;
 		}
