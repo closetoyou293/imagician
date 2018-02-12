@@ -20,7 +20,7 @@ namespace Imagician
 		ILogService _logService;
 		ISettingsService _settingsService;
 		Stack<FolderItem> _nav = new Stack<FolderItem>();
-
+		ImagicianService _service;
 
 		public ImagicianPageViewModel()
 		{
@@ -29,6 +29,7 @@ namespace Imagician
 			_imageService = DependencyService.Get<IImageService>();
 			_folderService = DependencyService.Get<IFolderService>();
 			_settingsService = DependencyService.Get<ISettingsService>();
+			_service = new ImagicianService();
 			PropertyChanged += (sender, e) =>
 			{
 
@@ -40,6 +41,7 @@ namespace Imagician
 		public async void Init()
 		{
 			SelectedPath = new FolderItem { Title = "root", Path = Path.Combine("/", "Volumes"), IsFolder = true };
+			var parsedFolders = await _service.GetParsedFoldersAsync();
 		}
 
 		bool _isRecursive = true;
@@ -82,7 +84,7 @@ namespace Imagician
 
 				SetProperty(ref _selectedPath, value);
 				SelectedPathText = value.ToString();
-				GetFiles();
+				GetFiles(SelectedPath);
 			
 				if (_nav.Count == 0 || _nav.Peek() != _selectedPath)
 					_nav.Push(_selectedPath);
@@ -176,11 +178,13 @@ namespace Imagician
 			}
 		}
 
-		void GetFiles()
+		async Task GetFiles(FolderItem path)
 		{
+			await _service.AddFolderAsync(path);
 			Items.Clear();
-			foreach (var item in _folderService.GetFilesForPath(SelectedPath.Path))
+			foreach (var item in _folderService.GetFilesForPath(path.Path))
 			{
+				await _service.AddFileAsync(path,item);
 				Items.Add(item);
 			}
 		}

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>{EB6A1DEB-643A-455D-9ED3-F037B841C180}</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Imagician.Data</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)FolderItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ImagicianDatabaseContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ImagicianService.cs" />
+  </ItemGroup>
+</Project>

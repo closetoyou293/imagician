@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Imagician.Core", "Core\Imag
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Imagician.MacOS", "MacOS\Imagician.MacOS.csproj", "{AEE4E46D-B343-4BD4-AFFA-9D465ED5DFC6}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Imagician.Data", "Imagician.Data\Imagician.Data.shproj", "{EB6A1DEB-643A-455D-9ED3-F037B841C180}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

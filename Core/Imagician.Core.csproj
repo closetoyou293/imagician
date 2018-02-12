@@ -5,5 +5,8 @@
   <ItemGroup>
     <PackageReference Include="Xamarin.Forms" Version="2.6.0.177520-nightly" />
     <PackageReference Include="ExifLib.PCL" Version="1.0.2-pre01" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Design" Version="2.0.0-preview1-final" />
   </ItemGroup>
+  <Import Project="..\Imagician.Data\Imagician.Data.projitems" Label="Shared" Condition="Exists('..\Imagician.Data\Imagician.Data.projitems')" />
 </Project>

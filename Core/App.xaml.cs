@@ -6,6 +6,16 @@ namespace Imagician
 	{
 		public App()
 		{
+			using (var context = new ImagicianDatabaseContext())
+			{
+
+				//The line below clears and resets the databse.
+				context.Database.EnsureDeleted();
+
+				// Create the database if it does not exist
+				context.Database.EnsureCreated();
+			}
+
 			InitializeComponent();
 			DependencyService.Register<ILogService, LogService>();
 			DependencyService.Register<ISettingsService, SettingsService>();
