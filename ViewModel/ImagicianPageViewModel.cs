@@ -57,6 +57,13 @@ namespace Imagician
 			private set { SetProperty(ref _items, value); }
 		}
 
+		string _selectedPathText = string.Empty;
+		public string SelectedPathText
+		{
+			get { return _selectedPathText; }
+			private set { SetProperty(ref _selectedPathText, value); }
+		}
+
 
 		FolderItem _selectedPath;
 		public FolderItem SelectedPath
@@ -74,6 +81,7 @@ namespace Imagician
 				}
 
 				SetProperty(ref _selectedPath, value);
+				SelectedPathText = value.ToString();
 				GetFiles();
 				if (_nav.Count == 0 || _nav.Peek() != _selectedPath)
 					_nav.Push(_selectedPath);

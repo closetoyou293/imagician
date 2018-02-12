@@ -11,11 +11,13 @@ namespace Imagician
 			DependencyService.Register<ISettingsService, SettingsService>();
 			DependencyService.Register<IFolderService, FolderItemService>();
 			DependencyService.Register<IImageService, ImageService>();
-			var root = new MasterDetailPage();
-			root.BindingContext = new ImagicianPageViewModel();
-			root.Master = new ImagicianPage();
-			root.Detail = new NavigationPage(new FolderDetailPage());
-
+			var root = new MasterDetailPage()
+			{
+				BindingContext = new ImagicianPageViewModel(),
+				Master = new ImagicianPage(),
+				Detail = new ContentPage()
+			};
+			//MainPage = new NavigationPage(new FolderDetailPage()) { BindingContext = new ImagicianPageViewModel() };
 			MainPage = root;
 		}
 

@@ -8,6 +8,11 @@
 		public string Title { get; internal set; }
 		public string Path { get; internal set; }
 		public string ImagePath { get; internal set; }
+
+		public override string ToString()
+		{
+			return Path.ToString();
+		}
 	}
 
 	public class FolderItemExif : FolderItem

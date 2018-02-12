@@ -53,9 +53,11 @@ namespace Imagician
 						   CopyImage(item.ImagePath);
 					   else if (!item.IsImage && !item.IsFolder)
 					   {
+						if (item.Path.StartsWith("$", StringComparison.OrdinalIgnoreCase))
+							continue;
 						   var filePath = item.Path;
 						   var newFilePath = Path.Combine(_backupPath, _noExifBaseFolder, filePath.Replace(_pathToReplace, ""));
-						   CopyFile(filePath, newFilePath, false);
+						 //  CopyFile(filePath, newFilePath, false);
 					   }
 
 					   if (item.IsFolder && isRecursive)

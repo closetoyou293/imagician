@@ -5,7 +5,7 @@ namespace Imagician
 {
 	public class SettingsService : ISettingsService
 	{
-		string _backupPath = Path.Combine("/");
+		string _backupPath = Path.Combine("/Backup");
 
 		string _noExifBaseFolder = "nodate";
 
