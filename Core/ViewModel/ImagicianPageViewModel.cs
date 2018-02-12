@@ -37,7 +37,7 @@ namespace Imagician
 			};
 		}
 
-		public void Init()
+		public async void Init()
 		{
 			SelectedPath = new FolderItem { Title = "root", Path = Path.Combine("/", "Volumes"), IsFolder = true };
 		}
@@ -83,6 +83,7 @@ namespace Imagician
 				SetProperty(ref _selectedPath, value);
 				SelectedPathText = value.ToString();
 				GetFiles();
+			
 				if (_nav.Count == 0 || _nav.Peek() != _selectedPath)
 					_nav.Push(_selectedPath);
 

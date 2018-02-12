@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Imagician.MacOS
 {
-	public class FileService : IFileService
+	public class FileService : Imagician.IFileService
 	{
 		public List<string> GetFolders(string folder, bool showFiles = false)
 		{

@@ -14,7 +14,7 @@ namespace Imagician.iOS
         {
             global::Xamarin.Forms.Forms.Init();
 
-            LoadApplication(new App());
+			LoadApplication(new Imagician.App());
 
             return base.FinishedLaunching(app, options);
         }

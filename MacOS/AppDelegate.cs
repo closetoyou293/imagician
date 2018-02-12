@@ -36,7 +36,6 @@ namespace Imagician.MacOS
 
 		public override void DidFinishLaunching(NSNotification notification)
 		{
-		//	SQLitePCL.Batteries.Init();
 			Forms.Init();
 			DependencyService.Register<IFileService, FileService>();
 			var app = new App();
