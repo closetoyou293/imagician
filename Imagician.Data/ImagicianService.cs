@@ -11,13 +11,14 @@ namespace Imagician
 
 		public ImagicianService()
 		{
-			_context = new ImagicianDatabaseContext();
+			_context = App.DBContext;
 		}
 
-		public async Task<IEnumerable<FolderItem>> GetParsedFoldersAsync()
+		public Task<List<FolderItem>> GetParsedFoldersAsync()
 		{
-			return _context.Folders.Where(c=> c.Done).ToAsyncEnumerable();
+			return Task.Run<List<FolderItem>>(() => _context.Folders.ToList());
 		}
+		
 
 		public async Task AddFolderAsync(FolderItem folderitem)
 		{

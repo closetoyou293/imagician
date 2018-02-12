@@ -8,15 +8,16 @@ namespace Imagician
 		public DbSet<FolderItem> Folders { get; set; }
 
 		public DbSet<FolderItem> Files { get; set; }
-
-		public ImagicianDatabaseContext()
+		string _dbPath;
+		public ImagicianDatabaseContext(string path)
 		{
+			_dbPath = path;
 		}
 
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{
 			// Specify the path of the database here
-			optionsBuilder.UseSqlite("Filename=./imagician.sqlite");
+			optionsBuilder.UseSqlite($"Filename={_dbPath}");
 		}
 	}
 }

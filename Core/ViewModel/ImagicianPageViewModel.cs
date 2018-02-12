@@ -180,13 +180,21 @@ namespace Imagician
 
 		async Task GetFiles(FolderItem path)
 		{
-			await _service.AddFolderAsync(path);
-			Items.Clear();
-			foreach (var item in _folderService.GetFilesForPath(path.Path))
+			try
 			{
-				await _service.AddFileAsync(path,item);
-				Items.Add(item);
+				await _service.AddFolderAsync(path);
+				Items.Clear();
+				foreach (var item in _folderService.GetFilesForPath(path.Path))
+				{
+					await _service.AddFileAsync(path, item);
+					Items.Add(item);
+				}
 			}
+			catch (Exception ex)
+			{
+
+			}
+
 		}
 	}
 }

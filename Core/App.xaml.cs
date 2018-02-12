@@ -4,17 +4,12 @@ namespace Imagician
 {
 	public partial class App : Application
 	{
-		public App()
+		public static ImagicianDatabaseContext DBContext;
+		public App(string dbPath)
 		{
-			using (var context = new ImagicianDatabaseContext())
-			{
-
-				//The line below clears and resets the databse.
-				context.Database.EnsureDeleted();
-
-				// Create the database if it does not exist
-				context.Database.EnsureCreated();
-			}
+			DBContext = new ImagicianDatabaseContext(dbPath);
+			DBContext.Database.EnsureDeleted();
+			DBContext.Database.EnsureCreated();
 
 			InitializeComponent();
 			DependencyService.Register<ILogService, LogService>();

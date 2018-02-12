@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using AppKit;
 using Foundation;
 using Xamarin.Forms;
@@ -38,7 +39,9 @@ namespace Imagician.MacOS
 		{
 			Forms.Init();
 			DependencyService.Register<IFileService, FileService>();
-			var app = new App();
+			var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),"imagician.db");
+
+			var app = new App(dbPath);
 
 			LoadApplication(app);
 			base.DidFinishLaunching(notification);
