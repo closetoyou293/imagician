@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using ExifLib;
+using Imagician.Core.Services.Interfaces;
 using Xamarin.Forms;
 
 namespace Imagician
@@ -20,7 +21,7 @@ namespace Imagician
 		ILogService _logService;
 		ISettingsService _settingsService;
 		Stack<FolderItem> _nav = new Stack<FolderItem>();
-		ImagicianService _service;
+		IDatabaseService _service;
 
 		public ImagicianPageViewModel()
 		{
@@ -29,7 +30,7 @@ namespace Imagician
 			_imageService = DependencyService.Get<IImageService>();
 			_folderService = DependencyService.Get<IFolderService>();
 			_settingsService = DependencyService.Get<ISettingsService>();
-			_service = new ImagicianService();
+			_service = DependencyService.Get<IDatabaseService>();
 			PropertyChanged += (sender, e) =>
 			{
 
@@ -40,7 +41,7 @@ namespace Imagician
 
 		public async void Init()
 		{
-			SelectedPath = new FolderItem { Title = "root", Path = Path.Combine("/", "Volumes"), IsFolder = true };
+			SelectedPath = new FolderItem { Title = "root", Path = Path.Combine("/", "Volumes", "Macintosh HD", "Users", "rmarinho", "downloads"), IsFolder = true };
 			var parsedFolders = await _service.GetParsedFoldersAsync();
 		}
 
@@ -171,7 +172,7 @@ namespace Imagician
 					IsBusy = true;
 					var path = SelectedPath.Path;
 					_logService.AddMessage(nameof(ImagicianPageViewModel), $"Start Parsing Folder {path}");
-					await _imageService.ParseFolderForImagesAsync(path, IsRecursive);
+					await Task.Run(() => _imageService.ParseFolderForImagesAsync(path, 1, IsRecursive));
 					_logService.AddMessage(nameof(ImagicianPageViewModel), $"Ended Parsing Folder {path}");
 					IsBusy = false;
 				}, (arg) => SelectedPath != null && !IsBusy));
@@ -183,12 +184,15 @@ namespace Imagician
 			try
 			{
 				await _service.AddFolderAsync(path);
+				path.IsParsing = true;
 				Items.Clear();
 				foreach (var item in _folderService.GetFilesForPath(path.Path))
 				{
 					await _service.AddFileAsync(path, item);
 					Items.Add(item);
 				}
+				path.IsParsing = false;
+				path.Done = true;
 			}
 			catch (Exception ex)
 			{

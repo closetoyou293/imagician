@@ -12,5 +12,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)FolderItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ImagicianDatabaseContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ImagicianService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ParseInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ImageInfo.cs" />
   </ItemGroup>
 </Project>

@@ -4,6 +4,6 @@ namespace Imagician
 {
 	public interface IImageService
 	{
-		Task ParseFolderForImagesAsync(string folderPath, bool isRecursive);
+		Task<int> ParseFolderForImagesAsync(string folderPath, int folderParsed, bool isRecursive);
 	}
 }

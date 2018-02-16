@@ -8,6 +8,11 @@ namespace Imagician
 		public DbSet<FolderItem> Folders { get; set; }
 
 		public DbSet<FolderItem> Files { get; set; }
+
+		public DbSet<ParseInfo> ParseInfos { get; set; }
+
+		public DbSet<ImageInfo> ParseImageInfos { get; set; }
+
 		string _dbPath;
 		public ImagicianDatabaseContext(string path)
 		{

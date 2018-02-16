@@ -1,4 +1,5 @@
-﻿using Xamarin.Forms;
+﻿using Imagician.Core.Services.Interfaces;
+using Xamarin.Forms;
 
 namespace Imagician
 {
@@ -12,6 +13,7 @@ namespace Imagician
 			DBContext.Database.EnsureCreated();
 
 			InitializeComponent();
+			DependencyService.Register<IDatabaseService, ImagicianService>();
 			DependencyService.Register<ILogService, LogService>();
 			DependencyService.Register<ISettingsService, SettingsService>();
 			DependencyService.Register<IFolderService, FolderItemService>();
@@ -20,7 +22,7 @@ namespace Imagician
 			{
 				BindingContext = new ImagicianPageViewModel(),
 				Master = new ImagicianPage(),
-				Detail = new ContentPage()
+				Detail = new ImageDetailPage()
 			};
 			//MainPage = new NavigationPage(new FolderDetailPage()) { BindingContext = new ImagicianPageViewModel() };
 			MainPage = root;
